@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 from flask_migrate import Migrate
 from send_mail import send_mail
+from collections.abc import Mapping
 
 app = Flask(__name__)
 
