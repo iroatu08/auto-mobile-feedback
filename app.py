@@ -7,11 +7,11 @@ from collections.abc import Mapping
 
 app = Flask(__name__)
 
-ENV = 'prod'
+ENV = 'dev'
 
 if ENV == 'dev':
     app.debug = True
-    app.config ['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:test007@localhost:5432/auto'
+    app.config ['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:test007@localhost:5432/feedback'
     
 else:
     app.debug = False
@@ -25,13 +25,15 @@ migrate = Migrate(app, db)
 class Feedback(db.Model):
     __tablename__ = 'feedback'
     id = db.Column(db.Integer, primary_key=True)
-    customer = db.Column(db.String(200), unique=True)
+    customer = db.Column(db.String(200))
+    email = db.Column(db.String(200), unique=True)
     dealer = db.Column(db.String(200))
     rating = db.Column(db.Integer)
     comments = db.Column(db.Text())
     
-    def __init__(self, customer, dealer, rating, comments):
+    def __init__(self, customer, email, dealer, rating, comments):
         self.customer= customer
+        self.email=email
         self.dealer=dealer
         self.rating=rating
         self.comments = comments
@@ -45,19 +47,20 @@ def index():
 def submit():
     if request.method == 'POST':
         customer = request.form['customer']
+        email = request.form['email']
         dealer = request.form['dealer']
         rating = request.form['rating']
         comments = request.form['comments']
         
-        if customer == '' or dealer =='':
+        if customer == '' or email =='':
             return render_template('index.html', message='please enter required fields')
         #print(customer, dealer, rating, comments)
         
-        if db.session.query(Feedback).filter(Feedback.customer==customer).count() == 0:
-            data = Feedback(customer, dealer, rating, comments)
+        if db.session.query(Feedback).filter(Feedback.email==email).count() == 0:
+            data = Feedback(customer, email, dealer, rating, comments)
             db.session.add(data)
             db.session.commit()
-            send_mail(customer, dealer, rating, comments)
+            send_mail(customer, email, dealer, rating, comments)
             return render_template('success.html')
         else:
          return render_template('index.html', message='you have already submitted!')
