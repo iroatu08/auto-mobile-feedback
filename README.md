@@ -1,2 +1,2 @@
 # auto-mobile-feedback
-customer's feedback on car purchases.
+customer's feedback api
